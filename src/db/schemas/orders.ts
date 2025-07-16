@@ -4,14 +4,15 @@ import {
   integer,
   pgEnum,
   pgTable,
+  serial,
   text,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
 import { createdAt, id, updatedAt } from "../schema-helpers";
+import { AddressTable } from "./address";
 import { ProductsTable } from "./products";
 import { UsersTable } from "./users";
-import { AddressTable } from "./address";
 
 export const ordersStatues = [
   "pending",
@@ -24,6 +25,7 @@ export const OrderStatus = pgEnum("isPublished", ordersStatues);
 
 export const OrdersTable = pgTable("orders", {
   id,
+  sortId: serial("sort_id").notNull(),
   order_id: text().notNull(),
   user_id: uuid()
     .references(() => UsersTable.id, { onDelete: "cascade" })

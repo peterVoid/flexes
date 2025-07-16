@@ -1,4 +1,4 @@
-import { integer, pgTable, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, uuid } from "drizzle-orm/pg-core";
 import { createdAt, id, updatedAt } from "../schema-helpers";
 import { UsersTable } from "./users";
 import { ProductsTable } from "./products";
@@ -6,6 +6,7 @@ import { relations } from "drizzle-orm";
 
 export const CartTable = pgTable("cart", {
   id,
+  sortId: serial("sort_id").notNull(),
   userId: uuid()
     .references(() => UsersTable.id, { onDelete: "cascade" })
     .notNull(),

@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { ordersStatues, OrdersTable, ReviewsTable } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, lt } from "drizzle-orm";
+import { and, count, desc, eq, lte } from "drizzle-orm";
 import { z } from "zod";
 
 export const orderRouter = createTRPCRouter({
@@ -100,12 +100,12 @@ export const orderRouter = createTRPCRouter({
 
       const myOrders = await db.query.OrdersTable.findMany({
         where: and(
-          cursor ? lt(OrdersTable.createdAt, new Date(cursor)) : undefined,
-          eq(OrdersTable.hasPaid, true),
           eq(OrdersTable.user_id, user.id),
+          eq(OrdersTable.hasPaid, true),
+          cursor ? lte(OrdersTable.sortId, cursor) : undefined,
         ),
         limit: take,
-        orderBy: desc(OrdersTable.transaction_time),
+        orderBy: desc(OrdersTable.sortId),
         with: {
           product: {
             columns: { id: true, name: true, price: true, imageUrl: true },
@@ -125,7 +125,7 @@ export const orderRouter = createTRPCRouter({
       let nextCursor: number | undefined = undefined;
       if (myOrders.length === take) {
         const nextParam = myOrders.pop()!;
-        nextCursor = nextParam.createdAt.getTime();
+        nextCursor = nextParam.sortId;
       }
 
       return {

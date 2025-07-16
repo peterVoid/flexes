@@ -1,52 +1,64 @@
 "use client";
 
+import { DialogButton } from "@/components/dialog-button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DEFAULT_LIMIT } from "@/constans";
+import { ReviewForm } from "@/features/reviews/components/review-form";
+import { formatAsRupiah } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { MapPinIcon } from "lucide-react";
-import { Order } from "../types";
-import { IoBagCheck } from "react-icons/io5";
-import { Badge } from "@/components/ui/badge";
+import { BoxesIcon, Loader2Icon } from "lucide-react";
 import Image from "next/image";
-import { formatAsRupiah } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { DialogButton } from "@/components/dialog-button";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { IoBagCheck } from "react-icons/io5";
 import { toast } from "sonner";
-import { ReviewForm } from "@/features/reviews/components/review-form";
+import { Order } from "../types";
+import { useInterSectionObserver } from "@/hooks/use-intersection-observer";
 
 export function OrderList() {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
   const trpc = useTRPC();
-  const { data } = useSuspenseInfiniteQuery(
-    trpc.orders.getMany.infiniteQueryOptions(
-      {
-        limit: DEFAULT_LIMIT,
-      },
-      {
-        getNextPageParam: (lastItem) => lastItem.nextCursor,
-      },
-    ),
-  );
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useSuspenseInfiniteQuery(
+      trpc.orders.getMany.infiniteQueryOptions(
+        {
+          limit: DEFAULT_LIMIT,
+        },
+        {
+          getNextPageParam: (lastItem) => lastItem.nextCursor,
+        },
+      ),
+    );
 
   const orders = data.pages.flatMap((d) => d.myOrders);
+
+  useInterSectionObserver({
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    loadMoreRef,
+  });
 
   return (
     <>
       <div className="px-7">
         {orders?.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-black bg-white py-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <MapPinIcon className="mb-4 h-10 w-10 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No addresses saved</h3>
-            <p className="mb-4 text-sm text-gray-600">
-              Add your first address to get started
-            </p>
+            <BoxesIcon className="mb-4 h-10 w-10 text-gray-400" />
+            <h3 className="mb-2 text-lg font-medium">No transactions saved</h3>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-y-3">
             {orders.map((order) => (
               <OrderCard key={order.id} order={order} />
             ))}
+            {hasNextPage && isFetchingNextPage && (
+              <Loader2Icon className="mx-auto mt-7 animate-spin" />
+            )}
+            {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
           </div>
         )}
       </div>

@@ -8,7 +8,7 @@ import {
 } from "@/trpc/init";
 import { auth } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, desc, eq, lte } from "drizzle-orm";
 import { z } from "zod";
 
 export const cartRouter = createTRPCRouter({
@@ -28,9 +28,9 @@ export const cartRouter = createTRPCRouter({
       const carts = await db.query.CartTable.findMany({
         where: and(
           eq(CartTable.userId, user.id),
-          cursor ? lt(CartTable.createdAt, new Date(cursor)) : undefined,
+          cursor ? lte(CartTable.sortId, cursor) : undefined,
         ),
-        orderBy: desc(CartTable.createdAt),
+        orderBy: desc(CartTable.sortId),
         limit: take,
         with: {
           product: {
@@ -48,7 +48,7 @@ export const cartRouter = createTRPCRouter({
       let nextCursor: number | undefined = undefined;
       if (carts.length === take) {
         const nextItem = carts.pop()!;
-        nextCursor = nextItem.createdAt.getTime();
+        nextCursor = nextItem.sortId;
       }
 
       return {

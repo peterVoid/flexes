@@ -46,7 +46,7 @@ export function ProductCardSummary({
       <Button
         onClick={onCheckout}
         className="w-full rounded-md border-2 border-black bg-white py-3 font-bold text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-black hover:text-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-        disabled={!canUserCheckout}
+        disabled={!canUserCheckout || isLoading}
       >
         PROCEED TO CHECKOUT
       </Button>

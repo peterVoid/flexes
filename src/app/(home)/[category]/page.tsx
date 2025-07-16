@@ -39,7 +39,7 @@ export default async function Home({ searchParams, params }: Props) {
   return (
     <div className="px-12 py-8">
       <div className="flex justify-between">
-        <h1 className="text-3xl">Curated For you</h1>
+        <h1 className="text-3xl">Recommendation for you</h1>
         <span>Sorting</span>
       </div>
       <div className="my-8 grid grid-cols-7 gap-6">

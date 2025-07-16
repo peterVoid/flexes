@@ -162,7 +162,7 @@ export const productRouter = createTRPCRouter({
               gt(ProductsTable.price, cursor.productPrice),
               and(
                 eq(ProductsTable.price, cursor.productPrice),
-                gt(ProductsTable.sortId, cursor.sortId),
+                gte(ProductsTable.sortId, cursor.sortId),
               ),
             )
           : undefined;
@@ -173,7 +173,7 @@ export const productRouter = createTRPCRouter({
               lt(ProductsTable.price, cursor.productPrice),
               and(
                 eq(ProductsTable.price, cursor.productPrice),
-                lt(ProductsTable.sortId, cursor.sortId),
+                lte(ProductsTable.sortId, cursor.sortId),
               ),
             )
           : undefined;
@@ -184,7 +184,7 @@ export const productRouter = createTRPCRouter({
               lt(ProductsTable.soldCount, cursor.bestSeller),
               and(
                 eq(ProductsTable.soldCount, cursor.bestSeller),
-                lt(ProductsTable.sortId, cursor.sortId),
+                lte(ProductsTable.sortId, cursor.sortId),
               ),
             )
           : undefined;

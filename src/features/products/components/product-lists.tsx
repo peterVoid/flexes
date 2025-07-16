@@ -1,15 +1,17 @@
 "use client";
 
 import { DEFAULT_LIMIT } from "@/constans";
+import { useInterSectionObserver } from "@/hooks/use-intersection-observer";
 import { useTRPC } from "@/trpc/client";
+import { useAuth } from "@clerk/nextjs";
 import {
   useQueryClient,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import { BookX, Loader2Icon } from "lucide-react";
+import { BookX } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { ProductCard } from "./product-card";
-import { useAuth } from "@clerk/nextjs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   minPrice?: string;
@@ -61,31 +63,12 @@ export function ProductLists({
     }
   }, [isSignedIn, queryClient, trpc.auth.session]);
 
-  useEffect(() => {
-    const loadMoreNode = loadMoreRef.current;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      {
-        rootMargin: "100px",
-      },
-    );
-
-    if (loadMoreNode) {
-      observer.observe(loadMoreNode);
-    }
-
-    return () => {
-      if (loadMoreNode) {
-        observer.unobserve(loadMoreNode);
-      }
-    };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  useInterSectionObserver({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loadMoreRef,
+  });
 
   const products = data.pages.flatMap((p) => p.products);
 
@@ -102,8 +85,10 @@ export function ProductLists({
 
   if (isFetchingNextPage || isLoading) {
     return (
-      <div className="flex items-center justify-center">
-        <Loader2Icon className="animate-spin" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+        {[1, 2, 3, 4, 5].map((_, i) => (
+          <Skeleton key={i} className="h-80 w-[250px] bg-slate-500" />
+        ))}
       </div>
     );
   }

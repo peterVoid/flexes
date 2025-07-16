@@ -24,7 +24,7 @@ export const userRouter = createTRPCRouter({
     ]);
 
     return {
-      avgAmount: ordersData.amount,
+      avgAmount: ordersData?.amount ?? 0,
       usersCount: usersCount.count,
     };
   }),

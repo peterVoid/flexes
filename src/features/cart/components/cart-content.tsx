@@ -1,6 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { DEFAULT_LIMIT } from "@/constans";
+import { useInterSectionObserver } from "@/hooks/use-intersection-observer";
+import { cn } from "@/lib/utils";
 import { useTRPC } from "@/trpc/client";
 import {
   useMutation,
@@ -8,13 +11,13 @@ import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { CartItem } from "./cart-item";
-import { ProductCardSummary } from "./product-card-summary";
 import { Poppins } from "next/font/google";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
+import { CartItem } from "./cart-item";
+import { ProductCardSummary } from "./product-card-summary";
+import { Loader2Icon } from "lucide-react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,11 +25,17 @@ const poppins = Poppins({
 });
 
 export function CartContent() {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { data: cartData } = useSuspenseInfiniteQuery(
+  const {
+    data: cartData,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useSuspenseInfiniteQuery(
     trpc.cart.getMany.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
@@ -86,11 +95,16 @@ export function CartContent() {
   const canUserCheckout =
     carts.every((d) => d.product.stock > 0) && userHasMainAddress;
 
-  console.log(canUserCheckout);
-
   const getProductNameOutOfStock = carts
     .filter((d) => d.product.stock === 0)
     .map((d) => d.product.name);
+
+  useInterSectionObserver({
+    loadMoreRef,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  });
 
   return (
     <>
@@ -111,20 +125,33 @@ export function CartContent() {
               </div>
             </div>
           ) : (
-            cartData.pages
-              .flatMap((d) => d.carts)
-              .map((cart) => (
-                <CartItem
-                  key={cart.id}
-                  cart={cart}
-                  onDecrease={() => decreaseQty({ productId: cart.product.id })}
-                  onIncrease={() => increaseQty({ productId: cart.product.id })}
-                  onRemove={() => removeProduct({ productId: cart.product.id })}
-                  isLoading={
-                    isIncreasePending || isDecreasePending || isRemovePending
-                  }
-                />
-              ))
+            <>
+              {cartData.pages
+                .flatMap((d) => d.carts)
+                .map((cart) => (
+                  <CartItem
+                    key={cart.id}
+                    cart={cart}
+                    onDecrease={() =>
+                      decreaseQty({ productId: cart.product.id })
+                    }
+                    onIncrease={() =>
+                      increaseQty({ productId: cart.product.id })
+                    }
+                    onRemove={() =>
+                      removeProduct({ productId: cart.product.id })
+                    }
+                    isLoading={
+                      isIncreasePending || isDecreasePending || isRemovePending
+                    }
+                  />
+                ))}
+
+              {hasNextPage && isFetchingNextPage && (
+                <Loader2Icon className="mx-auto animate-spin" />
+              )}
+              {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
+            </>
           )}
         </div>
       </div>
@@ -135,7 +162,12 @@ export function CartContent() {
           userHasMainAddress={userHasMainAddress}
           onCheckout={() => router.push("/cart/checkout")}
           total={totalPrice}
-          isLoading={isIncreasePending || isDecreasePending || isRemovePending}
+          isLoading={
+            isIncreasePending ||
+            isDecreasePending ||
+            isRemovePending ||
+            isFetchingNextPage
+          }
         />
       </div>
     </>

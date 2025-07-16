@@ -6,10 +6,10 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { SidebarLinks } from "./sidebar-links";
-import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { HomeIcon } from "lucide-react";
+import { Poppins } from "next/font/google";
+import { SidebarLinks } from "./sidebar-links";
 
 const poppins = Poppins({
   subsets: ["latin"],

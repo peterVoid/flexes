@@ -14,8 +14,10 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckoutAddress } from "./checkout-address";
+import { useInterSectionObserver } from "@/hooks/use-intersection-observer";
+import { Loader2Icon } from "lucide-react";
 
 declare global {
   interface Window {
@@ -41,12 +43,19 @@ const shippingProviders = [
 ];
 
 export function CheckoutContent() {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
   const [selectedCourier, setSelectedCourier] = useState("jne");
   const [shippingCost, setShippingCost] = useState(0);
   const [isShippingPending, setIsShippingPending] = useState(false);
 
   const trpc = useTRPC();
-  const { data: cartData } = useSuspenseInfiniteQuery(
+  const {
+    data: cartData,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useSuspenseInfiniteQuery(
     trpc.cart.getMany.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
@@ -125,6 +134,13 @@ export function CheckoutContent() {
   const userCanCheckout =
     carts.every((d) => d.product.stock > 0) && userHasMainAddress;
 
+  useInterSectionObserver({
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    loadMoreRef,
+  });
+
   return (
     <>
       <div className="lg:col-span-3">
@@ -143,6 +159,11 @@ export function CheckoutContent() {
                   />
                 );
               })}
+
+            {hasNextPage && isFetchingNextPage && (
+              <Loader2Icon className="mx-auto animate-spin" />
+            )}
+            {hasNextPage && <div ref={loadMoreRef} className="h-10" />}
           </>
         </div>
       </div>

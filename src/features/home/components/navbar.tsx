@@ -5,7 +5,7 @@ import { SignInButton } from "@/features/auth/components/sign-in-button";
 import { SignUpButton } from "@/features/auth/components/sign-up-button";
 import { cn } from "@/lib/utils";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
-import { SettingsIcon, ShoppingBasket } from "lucide-react";
+import { MapIcon, ShoppingBasket } from "lucide-react";
 import { Poppins } from "next/font/google";
 import Link from "next/link";
 import { useTRPC } from "@/trpc/client";
@@ -86,7 +86,7 @@ export function Navbar() {
                 <UserButton.MenuItems>
                   <UserButton.Link
                     label="Address"
-                    labelIcon={<SettingsIcon className="size-4" />}
+                    labelIcon={<MapIcon className="size-4" />}
                     href="/my-account/address"
                   />
                 </UserButton.MenuItems>
