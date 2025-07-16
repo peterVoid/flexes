@@ -1,4 +1,6 @@
+import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -7,6 +9,9 @@ export default function Page() {
       <h1 className="text-4xl font-bold">
         Thank you for purchasing our products🤗
       </h1>
+      <Button asChild>
+        <Link href="/">Back to Home</Link>
+      </Button>
     </div>
   );
 }

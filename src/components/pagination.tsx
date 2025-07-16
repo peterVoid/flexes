@@ -8,7 +8,7 @@ interface Props {
   page: number;
 }
 
-export function Pagination({ hasNextPage, totalPages, setPage, page }: Props) {
+export function Pagination({ totalPages, setPage, page }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();

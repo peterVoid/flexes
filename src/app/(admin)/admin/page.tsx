@@ -37,6 +37,8 @@ interface Props {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function Page({ searchParams }: Props) {
   const {
     newCustomersRange,
@@ -115,7 +117,7 @@ export default async function Page({ searchParams }: Props) {
   );
 }
 
-export async function getRevenueByProducts(
+async function getRevenueByProducts(
   createdAfter: Date | null,
   createdBefore: Date | null,
 ) {
@@ -152,7 +154,7 @@ export async function getRevenueByProducts(
   };
 }
 
-export async function getNewCustomers(
+async function getNewCustomers(
   createdAfter: Date | null,
   createdBefore: Date | null,
 ) {
@@ -192,7 +194,7 @@ export async function getNewCustomers(
   };
 }
 
-export async function getTotalSales(
+async function getTotalSales(
   createdAfter: Date | null,
   createdBefore: Date | null,
 ) {

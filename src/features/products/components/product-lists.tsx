@@ -2,10 +2,14 @@
 
 import { DEFAULT_LIMIT } from "@/constans";
 import { useTRPC } from "@/trpc/client";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import {
+  useQueryClient,
+  useSuspenseInfiniteQuery,
+} from "@tanstack/react-query";
 import { BookX, Loader2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { ProductCard } from "./product-card";
+import { useAuth } from "@clerk/nextjs";
 
 interface Props {
   minPrice?: string;
@@ -27,8 +31,11 @@ export function ProductLists({
   sort,
 }: Props) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const { isSignedIn } = useAuth();
 
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } =
     useSuspenseInfiniteQuery(
       trpc.products.getManyPublic.infiniteQueryOptions(
@@ -47,6 +54,12 @@ export function ProductLists({
         },
       ),
     );
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      queryClient.invalidateQueries(trpc.auth.session.queryOptions());
+    }
+  }, [isSignedIn, queryClient, trpc.auth.session]);
 
   useEffect(() => {
     const loadMoreNode = loadMoreRef.current;

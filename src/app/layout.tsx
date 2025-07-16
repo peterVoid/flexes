@@ -9,7 +9,7 @@ import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "./api/uploadthing/core";
 
-export const dmSans = DM_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["600"],
 });

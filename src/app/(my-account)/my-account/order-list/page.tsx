@@ -11,6 +11,8 @@ const poppins = Poppins({
   weight: ["800"],
 });
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const queryClient = getQueryClient();
   void queryClient.prefetchInfiniteQuery(

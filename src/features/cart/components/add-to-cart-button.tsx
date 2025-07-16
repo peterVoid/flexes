@@ -39,7 +39,6 @@ export function AddToCartButton({
     trpc.cart.increaseQuantity.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.cart.isProductInCart.queryFilter());
-        queryClient.invalidateQueries(trpc.isProductInCart.queryFilter());
       },
       onError: (error) => {
         console.error(error.message);

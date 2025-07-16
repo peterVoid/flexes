@@ -14,6 +14,8 @@ interface Props {
   params: Promise<{ category: string; subcategory: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function Home({ searchParams, params }: Props) {
   const { minPrice, maxPrice, stock } = await searchParams;
   const { category, subcategory } = await params;
@@ -43,10 +45,12 @@ export default async function Home({ searchParams, params }: Props) {
       </div>
       <div className="my-8 grid grid-cols-7 gap-6">
         <div className="col-span-2">
-          <FilterProducts
-            defaultMinPrice={minPrice}
-            defaultMaxPrice={maxPrice}
-          />
+          <Suspense>
+            <FilterProducts
+              defaultMinPrice={minPrice}
+              defaultMaxPrice={maxPrice}
+            />
+          </Suspense>
         </div>
         <div className="col-span-5">
           <HydrationBoundary state={dehydrate(queryClient)}>

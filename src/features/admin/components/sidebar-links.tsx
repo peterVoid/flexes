@@ -1,7 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChartColumnIncreasing, Folder, Laptop } from "lucide-react";
+import { SignOutButton } from "@clerk/nextjs";
+import {
+  ChartColumnIncreasing,
+  DoorClosedIcon,
+  Folder,
+  Laptop,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IoPeopleCircleOutline } from "react-icons/io5";
@@ -64,6 +70,13 @@ export function SidebarLinks({ sidebarState }: Props) {
           )}
         </Link>
       ))}
+
+      <SignOutButton>
+        <div className="hover:bg-main flex cursor-pointer items-center gap-x-2 rounded-md px-3 py-2 transition">
+          <DoorClosedIcon className="size-5" />
+          Sign out
+        </div>
+      </SignOutButton>
     </div>
   );
 }

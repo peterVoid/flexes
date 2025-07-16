@@ -3,12 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { SignInButton } from "@/features/auth/components/sign-in-button";
 import { SignUpButton } from "@/features/auth/components/sign-up-button";
-import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { cn } from "@/lib/utils";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import { SettingsIcon, ShoppingBasket } from "lucide-react";
 import { Poppins } from "next/font/google";
 import Link from "next/link";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -27,7 +28,8 @@ const NAV_LINK_PAGES = [
 ];
 
 export function Navbar() {
-  const user = useCurrentUser();
+  const trpc = useTRPC();
+  const { data: user } = useQuery(trpc.auth.session.queryOptions());
 
   return (
     <ClerkProvider>

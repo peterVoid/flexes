@@ -10,6 +10,8 @@ interface Props {
   searchParams: Promise<{ page?: number; q?: string }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function Page({ searchParams }: Props) {
   const { page, q } = await searchParams;
 
@@ -29,7 +31,9 @@ export default async function Page({ searchParams }: Props) {
       <div className="flex flex-col gap-y-11">
         <h1 className="text-5xl font-bold">Products</h1>
         <div className="flex flex-1 items-center justify-between">
-          <FilterByInputName />
+          <Suspense>
+            <FilterByInputName />
+          </Suspense>
           <AddProductButton />
         </div>
         <HydrationBoundary state={dehydrate(queryClient)}>
