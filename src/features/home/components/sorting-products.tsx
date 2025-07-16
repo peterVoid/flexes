@@ -7,7 +7,9 @@ export function SortingProducts() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleClick = (value: "latest" | "oldest" | "best" = "latest") => {
+  const handleClick = (
+    value: "lowest_price" | "higher_price" | "best" = "best",
+  ) => {
     const params = new URLSearchParams(searchParams);
     if (value) {
       params.set("sort", value);
@@ -21,16 +23,16 @@ export function SortingProducts() {
       <Button
         className="bg-white"
         variant="reverse"
-        onClick={() => handleClick("latest")}
+        onClick={() => handleClick("lowest_price")}
       >
-        Latest
+        Lowest Price
       </Button>
       <Button
         className="bg-white"
         variant="reverse"
-        onClick={() => handleClick("oldest")}
+        onClick={() => handleClick("higher_price")}
       >
-        Oldest
+        Higher Price
       </Button>
       <Button
         className="bg-white"

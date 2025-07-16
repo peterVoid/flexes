@@ -11,13 +11,13 @@ interface Props {
     minPrice?: string;
     maxPrice?: string;
     stock?: string;
-    sort?: string;
     q?: string;
+    sort?: string;
   }>;
 }
 
 export default async function Home({ searchParams }: Props) {
-  const { minPrice, maxPrice, stock, sort, q } = await searchParams;
+  const { minPrice, maxPrice, stock, q, sort } = await searchParams;
 
   const queryClient = getQueryClient();
   void queryClient.prefetchInfiniteQuery(
@@ -27,11 +27,11 @@ export default async function Home({ searchParams }: Props) {
         minPrice: Number(minPrice ?? ""),
         maxPrice: Number(maxPrice ?? ""),
         stock,
-        sort,
         q,
+        sort,
       },
       {
-        getNextPageParam: (lastItem) => lastItem.nextCursor,
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
       },
     ),
   );
@@ -56,8 +56,8 @@ export default async function Home({ searchParams }: Props) {
                 minPrice={minPrice}
                 maxPrice={maxPrice}
                 stock={stock}
-                sort={sort}
                 q={q}
+                sort={sort}
               />
             </Suspense>
           </HydrationBoundary>

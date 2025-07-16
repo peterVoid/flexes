@@ -13,16 +13,29 @@ import {
   count,
   desc,
   eq,
+  gt,
   gte,
   ilike,
   inArray,
   lt,
   lte,
+  or,
 } from "drizzle-orm";
 import { z } from "zod";
 import { productSchema } from "../schemas/schema";
 
 export const productRouter = createTRPCRouter({
+  getActiveProducts: protectedProcedure.query(async () => {
+    const products = await db.select().from(ProductsTable);
+
+    const inactive = products.map((p) => p.isArchived === true).length;
+    const active = products.map((p) => p.isArchived === false).length;
+
+    return {
+      inactive,
+      active,
+    };
+  }),
   getOne: baseProcedure
     .input(
       z.object({
@@ -62,14 +75,20 @@ export const productRouter = createTRPCRouter({
   getManyPublic: baseProcedure
     .input(
       z.object({
-        cursor: z.number().nullish(),
+        cursor: z
+          .object({
+            productPrice: z.number(),
+            sortId: z.number(),
+            bestSeller: z.number(),
+          })
+          .nullish(),
         limit: z.number().min(1).max(100).default(DEFAULT_LIMIT),
         minPrice: z.number().optional(),
         maxPrice: z.number().optional(),
         stock: z.string().optional(),
+        sort: z.string().optional(),
         category: z.string().optional(),
         subcategory: z.string().optional(),
-        sort: z.string().optional(),
         q: z.string().optional(),
       }),
     )
@@ -82,13 +101,13 @@ export const productRouter = createTRPCRouter({
         stock,
         category,
         subcategory,
-        sort,
         q,
+        sort,
       } = input;
 
       const take = limit + 1;
 
-      let categoriesIds = [];
+      let categoriesIds: string[] = [];
 
       if (category) {
         const getCategory = await db.query.CategoriesTable.findFirst({
@@ -131,20 +150,50 @@ export const productRouter = createTRPCRouter({
         categoriesIds.push(getCategoryId?.id);
       }
 
-      let orderBy = desc(ProductsTable.createdAt);
+      let orderBy = [desc(ProductsTable.sortId)];
+      let uCursor = cursor
+        ? lte(ProductsTable.sortId, cursor.sortId)
+        : undefined;
 
-      if (sort === "latest") {
-        orderBy = desc(ProductsTable.createdAt);
-      } else if (sort === "oldest") {
-        orderBy = asc(ProductsTable.createdAt);
-      } else {
-        orderBy = desc(ProductsTable.soldCount);
+      if (sort === "lowest_price") {
+        orderBy = [asc(ProductsTable.price), asc(ProductsTable.sortId)];
+        uCursor = cursor
+          ? or(
+              gt(ProductsTable.price, cursor.productPrice),
+              and(
+                eq(ProductsTable.price, cursor.productPrice),
+                gt(ProductsTable.sortId, cursor.sortId),
+              ),
+            )
+          : undefined;
+      } else if (sort === "higher_price") {
+        orderBy = [desc(ProductsTable.price), desc(ProductsTable.sortId)];
+        uCursor = cursor
+          ? or(
+              lt(ProductsTable.price, cursor.productPrice),
+              and(
+                eq(ProductsTable.price, cursor.productPrice),
+                lt(ProductsTable.sortId, cursor.sortId),
+              ),
+            )
+          : undefined;
+      } else if (sort === "best") {
+        orderBy = [desc(ProductsTable.soldCount), desc(ProductsTable.sortId)];
+        uCursor = cursor
+          ? or(
+              lt(ProductsTable.soldCount, cursor.bestSeller),
+              and(
+                eq(ProductsTable.soldCount, cursor.bestSeller),
+                lt(ProductsTable.sortId, cursor.sortId),
+              ),
+            )
+          : undefined;
       }
 
       const products = await db.query.ProductsTable.findMany({
         where: and(
           eq(ProductsTable.isArchived, false),
-          cursor ? lt(ProductsTable.createdAt, new Date(cursor)) : undefined,
+          uCursor,
           minPrice ? gte(ProductsTable.price, minPrice) : undefined,
           maxPrice ? lte(ProductsTable.price, maxPrice) : undefined,
           stock
@@ -152,7 +201,7 @@ export const productRouter = createTRPCRouter({
               ? gte(ProductsTable.stock, 1)
               : eq(ProductsTable.stock, 0)
             : undefined,
-          category
+          category || subcategory
             ? inArray(ProductsTable.categoryId, categoriesIds)
             : undefined,
           q ? ilike(ProductsTable.name, `%${q}%`) : undefined,
@@ -168,6 +217,8 @@ export const productRouter = createTRPCRouter({
           description: true,
           content: true,
           isArchived: true,
+          sortId: true,
+          soldCount: true,
         },
         with: {
           category: {
@@ -180,10 +231,17 @@ export const productRouter = createTRPCRouter({
         limit: take,
       });
 
-      let nextCursor: number | undefined = undefined;
-      if (products.length === take) {
-        const nextitem = products.pop()!;
-        nextCursor = nextitem.createdAt.getTime();
+      let nextCursor:
+        | { productPrice: number; sortId: number; bestSeller: number }
+        | undefined = undefined;
+
+      if (products.length > limit) {
+        const nextItem = products.pop()!;
+        nextCursor = {
+          sortId: nextItem.sortId,
+          productPrice: nextItem.price,
+          bestSeller: nextItem.soldCount ?? 0,
+        };
       }
 
       return {

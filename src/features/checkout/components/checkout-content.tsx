@@ -159,7 +159,7 @@ export function CheckoutContent() {
           <div className="mt-3 border-t-3">
             <CheckoutButton
               isShippingPending={isShippingPending}
-              grossAmount={totalBill}
+              grossAmount={totalPrice}
               checkoutItems={checkoutItems}
               selectedCourier={selectedCourier}
               userAddressId={userMainAddress?.id as string}

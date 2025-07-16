@@ -7,6 +7,19 @@ import { and, count, desc, eq, lt } from "drizzle-orm";
 import { z } from "zod";
 
 export const orderRouter = createTRPCRouter({
+  getTotalSales: protectedProcedure.query(async () => {
+    const orders = await db.query.OrdersTable.findMany({
+      columns: { gross_amount: true },
+    });
+
+    return {
+      totalOrders: orders.length,
+      totalAmountPrice: orders.reduce(
+        (acc, item) => acc + item.gross_amount,
+        0,
+      ),
+    };
+  }),
   updateOrderStatus: protectedProcedure
     .input(
       z.object({

@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { boolean, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  serial,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createdAt, id, updatedAt } from "../schema-helpers";
 import { CategoriesTable } from "./categories";
 import { CartTable } from "./cart";
@@ -8,6 +15,7 @@ import { ReviewsTable } from "./reviews";
 
 export const ProductsTable = pgTable("products", {
   id,
+  sortId: serial("sort_id").notNull(),
   name: text().notNull(),
   description: text(),
   price: integer().notNull(),

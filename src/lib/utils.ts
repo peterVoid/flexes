@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat("id-ID").format(value);
+}
+
 export function formatAsRupiah(price: number, pretty: boolean = false) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -31,3 +35,9 @@ export const formatAsCurrency = (value: string) => {
     maximumFractionDigits: 2,
   }).format(toFloat);
 };
+
+export function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "medium",
+  }).format(date);
+}
